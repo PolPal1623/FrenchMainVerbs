@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Conjugueur FR • Тренажёр спряжения</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --font-family: "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+      --bg: #f5f5f7;
+      --bg-alt: #e9e9ef;
+      --surface: rgba(255, 255, 255, 0.72);
+      --surface-strong: rgba(255, 255, 255, 0.9);
+      --text: #1c1c1e;
+      --text-muted: #3a3a3c;
+      --accent: #0071e3;
+      --shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+      --border-radius: 18px;
+      --focus-outline: 2px solid var(--accent);
+    }
+
+    body[data-theme="dark"] {
+      --bg: #0b0b0f;
+      --bg-alt: #18181f;
+      --surface: rgba(34, 34, 38, 0.7);
+      --surface-strong: rgba(34, 34, 38, 0.92);
+      --text: #f5f5f7;
+      --text-muted: #b9b9c1;
+      --accent: #0a84ff;
+      --shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font-family);
+      background: radial-gradient(circle at top left, var(--bg-alt), var(--bg));
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      transition: background 0.4s ease, color 0.4s ease;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(20px);
+      background: var(--surface);
+      padding: 16px clamp(16px, 5vw, 40px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+
+    .app-title {
+      font-size: clamp(1.4rem, 3vw, 1.8rem);
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      margin: 0;
+    }
+
+    nav {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    button {
+      font: inherit;
+      border: none;
+      border-radius: 999px;
+      padding: 10px 18px;
+      background: rgba(0, 0, 0, 0.08);
+      color: var(--text);
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.2s ease, color 0.2s ease;
+      backdrop-filter: blur(12px);
+    }
+
+    button:hover {
+      background: rgba(0, 0, 0, 0.15);
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    button:focus-visible {
+      outline: var(--focus-outline);
+      outline-offset: 2px;
+    }
+
+    .primary-button {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 10px 30px rgba(0, 113, 227, 0.25);
+    }
+
+    .primary-button:hover {
+      background: color-mix(in srgb, var(--accent) 85%, white 15%);
+    }
+
+    main {
+      flex: 1;
+      padding: clamp(20px, 4vw, 50px);
+      display: grid;
+      place-items: start center;
+    }
+
+    .screen {
+      width: min(960px, 100%);
+      display: none;
+    }
+
+    .screen.active {
+      display: block;
+      animation: fade-in 0.2s ease;
+    }
+
+    .panel {
+      background: var(--surface);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      padding: clamp(20px, 4vw, 36px);
+      backdrop-filter: blur(18px);
+    }
+
+    .selectors {
+      display: grid;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    label {
+      font-weight: 500;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    select, input[type="text"] {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      background: var(--surface-strong);
+      color: var(--text);
+      font: inherit;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+      transition: border 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    select:focus-visible, input[type="text"]:focus-visible {
+      outline: var(--focus-outline);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 20%, transparent);
+    }
+
+    table.conjugation-table {
+      width: 100%;
+      border-collapse: collapse;
+      border-radius: 16px;
+      overflow: hidden;
+      background: var(--surface-strong);
+    }
+
+    table.conjugation-table tbody tr:nth-child(even) {
+      background: color-mix(in srgb, var(--surface-strong) 85%, var(--bg-alt) 15%);
+    }
+
+    table.conjugation-table th,
+    table.conjugation-table td {
+      padding: clamp(12px, 2.4vw, 18px);
+      text-align: left;
+      vertical-align: top;
+      font-size: clamp(0.95rem, 2.2vw, 1rem);
+    }
+
+    table.conjugation-table th {
+      width: 18%;
+      font-weight: 600;
+    }
+
+    .form-main {
+      font-size: clamp(1rem, 2.4vw, 1.2rem);
+      font-weight: 600;
+      margin-bottom: 6px;
+      letter-spacing: 0.01em;
+    }
+
+    .form-details {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      display: grid;
+      gap: 4px;
+      white-space: pre-line;
+    }
+
+    .form-details span.label {
+      font-weight: 600;
+    }
+
+    .card {
+      background: var(--surface-strong);
+      border-radius: var(--border-radius);
+      padding: clamp(20px, 5vw, 40px);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(22px);
+      display: grid;
+      gap: 16px;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    .card.fade {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    .card-header h2 {
+      margin: 0;
+      font-size: clamp(1.4rem, 4vw, 2rem);
+      font-weight: 700;
+    }
+
+    .card-header p {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .prompt {
+      margin: 0;
+      font-size: 1rem;
+      color: var(--text-muted);
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    #result-area {
+      min-height: 72px;
+      border-radius: 12px;
+      background: color-mix(in srgb, var(--surface-strong) 88%, var(--bg-alt) 12%);
+      padding: 16px;
+      font-size: 1rem;
+      display: grid;
+      gap: 8px;
+    }
+
+    .correct-answer {
+      font-size: clamp(1.2rem, 3vw, 1.6rem);
+      font-weight: 700;
+    }
+
+    .pronunciation {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .user-entry {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .round-indicator {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    footer {
+      padding: 24px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @keyframes fade-in {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (min-width: 720px) {
+      .selectors {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 class="app-title">Conjugueur FR</h1>
+    <nav>
+      <button id="theme-toggle" type="button" aria-pressed="false">Темная тема</button>
+      <button id="nav-reference" type="button">Справочник</button>
+      <button id="nav-training" type="button">Тренировка</button>
+    </nav>
+  </header>
+  <main>
+    <section id="reference-screen" class="screen active" aria-labelledby="reference-title">
+      <div class="panel" role="region" aria-live="polite">
+        <h2 id="reference-title" style="margin-top:0; font-size: clamp(1.6rem, 3.5vw, 2rem);">Справочник спряжений</h2>
+        <div class="selectors">
+          <label for="verb-select">Глагол</label>
+          <select id="verb-select"></select>
+          <label for="tense-select">Время</label>
+          <select id="tense-select"></select>
+        </div>
+        <table class="conjugation-table" aria-describedby="table-caption">
+          <caption id="table-caption" style="text-align:left; padding:12px; font-weight:500; color:var(--text-muted);">Полная таблица спряжения</caption>
+          <tbody id="table-body"></tbody>
+        </table>
+        <div style="margin-top:28px; display:flex; flex-wrap:wrap; gap:12px;">
+          <button id="start-training" class="primary-button" type="button">Начать тренировку</button>
+        </div>
+      </div>
+    </section>
+    <section id="training-screen" class="screen" aria-labelledby="training-title">
+      <div class="card" id="training-card" role="region">
+        <div class="card-header">
+          <h2 id="training-title">Глагол</h2>
+          <p id="training-meta">Время · местоимение</p>
+        </div>
+        <p class="prompt">Вспомни форму.</p>
+        <form id="answer-form">
+          <label class="sr-only" for="answer-input">Введите форму глагола</label>
+          <input id="answer-input" type="text" autocomplete="off" spellcheck="false" placeholder="Напишите форму" />
+          <div class="button-row">
+            <button id="reveal-button" class="primary-button" type="submit">Показать ответ</button>
+            <button id="next-button" type="button" disabled>Следующий</button>
+          </div>
+        </form>
+        <div id="result-area" aria-live="polite"></div>
+        <p class="round-indicator" id="round-indicator">Раунд 1 из 15</p>
+      </div>
+    </section>
+    <section id="completion-screen" class="screen" aria-labelledby="completion-title">
+      <div class="card" role="region">
+        <h2 id="completion-title" style="margin:0; font-size: clamp(1.6rem, 3.5vw, 2.1rem);">Тренировка завершена!</h2>
+        <p style="margin:0; color:var(--text-muted);">Готовы повторить ещё раз или вернуться к справочнику?</p>
+        <div class="button-row" style="margin-top:16px;">
+          <button id="restart-training" class="primary-button" type="button">Повторить тренировку</button>
+          <button id="back-to-reference" type="button">Вернуться к справочнику</button>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer>
+    © 2024 Conjugueur FR — французские глаголы: учим, тренируем, запоминаем.
+  </footer>
+  <script>
+    const VERBS = {
+      "être": {
+        "présent": [
+          { pronoun: "je", form: "suis", ipa: "sɥi", ruPron: "сьюи" },
+          { pronoun: "tu", form: "es", ipa: "e", ruPron: "э" },
+          { pronoun: "il/elle/on", form: "est", ipa: "e", ruPron: "э" },
+          { pronoun: "nous", form: "sommes", ipa: "sɔm", ruPron: "сом" },
+          { pronoun: "vous", form: "êtes", ipa: "ɛt", ruPron: "эт" },
+          { pronoun: "ils/elles", form: "sont", ipa: "sɔ̃", ruPron: "сон" }
+        ],
+        "imparfait": [
+          { pronoun: "je", form: "étais", ipa: "etɛ", ruPron: "этэ" },
+          { pronoun: "tu", form: "étais", ipa: "etɛ", ruPron: "этэ" },
+          { pronoun: "il/elle/on", form: "était", ipa: "etɛ", ruPron: "этэ" },
+          { pronoun: "nous", form: "étions", ipa: "etjɔ̃", ruPron: "этйõ" },
+          { pronoun: "vous", form: "étiez", ipa: "etje", ruPron: "этйе" },
+          { pronoun: "ils/elles", form: "étaient", ipa: "etɛ", ruPron: "этэ" }
+        ],
+        "passé composé": [
+          { pronoun: "je", aux: "ai", auxIpa: "e", auxRu: "э", pp: "été", ppIpa: "ete", ppRu: "этэ" },
+          { pronoun: "tu", aux: "as", auxIpa: "a", auxRu: "а", pp: "été", ppIpa: "ete", ppRu: "этэ" },
+          { pronoun: "il/elle/on", aux: "a", auxIpa: "a", auxRu: "а", pp: "été", ppIpa: "ete", ppRu: "этэ" },
+          { pronoun: "nous", aux: "avons", auxIpa: "avɔ̃", auxRu: "авõ", pp: "été", ppIpa: "ete", ppRu: "этэ" },
+          { pronoun: "vous", aux: "avez", auxIpa: "ave", auxRu: "авэ", pp: "été", ppIpa: "ete", ppRu: "этэ" },
+          { pronoun: "ils/elles", aux: "ont", auxIpa: "ɔ̃", auxRu: "õ", pp: "été", ppIpa: "ete", ppRu: "этэ" }
+        ]
+      },
+      "avoir": {
+        "présent": [
+          { pronoun: "je", form: "ai", ipa: "e", ruPron: "э" },
+          { pronoun: "tu", form: "as", ipa: "a", ruPron: "а" },
+          { pronoun: "il/elle/on", form: "a", ipa: "a", ruPron: "а" },
+          { pronoun: "nous", form: "avons", ipa: "avɔ̃", ruPron: "авõ" },
+          { pronoun: "vous", form: "avez", ipa: "ave", ruPron: "авэ" },
+          { pronoun: "ils/elles", form: "ont", ipa: "ɔ̃", ruPron: "õ" }
+        ],
+        "imparfait": [
+          { pronoun: "je", form: "avais", ipa: "avɛ", ruPron: "авэ" },
+          { pronoun: "tu", form: "avais", ipa: "avɛ", ruPron: "авэ" },
+          { pronoun: "il/elle/on", form: "avait", ipa: "avɛ", ruPron: "авэ" },
+          { pronoun: "nous", form: "avions", ipa: "avjɔ̃", ruPron: "авьõ" },
+          { pronoun: "vous", form: "aviez", ipa: "avje", ruPron: "авье" },
+          { pronoun: "ils/elles", form: "avaient", ipa: "avɛ", ruPron: "авэ" }
+        ],
+        "passé composé": [
+          { pronoun: "je", aux: "ai", auxIpa: "e", auxRu: "э", pp: "eu", ppIpa: "y", ppRu: "ю" },
+          { pronoun: "tu", aux: "as", auxIpa: "a", auxRu: "а", pp: "eu", ppIpa: "y", ppRu: "ю" },
+          { pronoun: "il/elle/on", aux: "a", auxIpa: "a", auxRu: "а", pp: "eu", ppIpa: "y", ppRu: "ю" },
+          { pronoun: "nous", aux: "avons", auxIpa: "avɔ̃", auxRu: "авõ", pp: "eu", ppIpa: "y", ppRu: "ю" },
+          { pronoun: "vous", aux: "avez", auxIpa: "ave", auxRu: "авэ", pp: "eu", ppIpa: "y", ppRu: "ю" },
+          { pronoun: "ils/elles", aux: "ont", auxIpa: "ɔ̃", auxRu: "õ", pp: "eu", ppIpa: "y", ppRu: "ю" }
+        ]
+      },
+      "faire": {
+        "présent": [
+          { pronoun: "je", form: "fais", ipa: "fɛ", ruPron: "фэ" },
+          { pronoun: "tu", form: "fais", ipa: "fɛ", ruPron: "фэ" },
+          { pronoun: "il/elle/on", form: "fait", ipa: "fɛ", ruPron: "фэ" },
+          { pronoun: "nous", form: "faisons", ipa: "fəzɔ̃", ruPron: "фёзон" },
+          { pronoun: "vous", form: "faites", ipa: "fɛt", ruPron: "фэт" },
+          { pronoun: "ils/elles", form: "font", ipa: "fɔ̃", ruPron: "фон" }
+        ],
+        "imparfait": [
+          { pronoun: "je", form: "faisais", ipa: "fəzɛ", ruPron: "фэзэ" },
+          { pronoun: "tu", form: "faisais", ipa: "fəzɛ", ruPron: "фэзэ" },
+          { pronoun: "il/elle/on", form: "faisait", ipa: "fəzɛ", ruPron: "фэзэ" },
+          { pronoun: "nous", form: "faisions", ipa: "fezjɔ̃", ruPron: "фезьон" },
+          { pronoun: "vous", form: "faisiez", ipa: "fezje", ruPron: "фезье" },
+          { pronoun: "ils/elles", form: "faisaient", ipa: "fəzɛ", ruPron: "фэзэ" }
+        ],
+        "passé composé": [
+          { pronoun: "je", aux: "ai", auxIpa: "e", auxRu: "э", pp: "fait", ppIpa: "fɛ", ppRu: "фэ" },
+          { pronoun: "tu", aux: "as", auxIpa: "a", auxRu: "а", pp: "fait", ppIpa: "fɛ", ppRu: "фэ" },
+          { pronoun: "il/elle/on", aux: "a", auxIpa: "a", auxRu: "а", pp: "fait", ppIpa: "fɛ", ppRu: "фэ" },
+          { pronoun: "nous", aux: "avons", auxIpa: "avɔ̃", auxRu: "авõ", pp: "fait", ppIpa: "fɛ", ppRu: "фэ" },
+          { pronoun: "vous", aux: "avez", auxIpa: "ave", auxRu: "авэ", pp: "fait", ppIpa: "fɛ", ppRu: "фэ" },
+          { pronoun: "ils/elles", aux: "ont", auxIpa: "ɔ̃", auxRu: "õ", pp: "fait", ppIpa: "fɛ", ppRu: "фэ" }
+        ]
+      },
+      "aller": {
+        "présent": [
+          { pronoun: "je", form: "vais", ipa: "vɛ", ruPron: "вэ" },
+          { pronoun: "tu", form: "vas", ipa: "va", ruPron: "ва" },
+          { pronoun: "il/elle/on", form: "va", ipa: "va", ruPron: "ва" },
+          { pronoun: "nous", form: "allons", ipa: "alɔ̃", ruPron: "алõ" },
+          { pronoun: "vous", form: "allez", ipa: "ale", ruPron: "але" },
+          { pronoun: "ils/elles", form: "vont", ipa: "vɔ̃", ruPron: "вон" }
+        ],
+        "imparfait": [
+          { pronoun: "je", form: "allais", ipa: "alɛ", ruPron: "алэ" },
+          { pronoun: "tu", form: "allais", ipa: "alɛ", ruPron: "алэ" },
+          { pronoun: "il/elle/on", form: "allait", ipa: "alɛ", ruPron: "алэ" },
+          { pronoun: "nous", form: "allions", ipa: "aljɔ̃", ruPron: "альõ" },
+          { pronoun: "vous", form: "alliez", ipa: "alje", ruPron: "алье" },
+          { pronoun: "ils/elles", form: "allaient", ipa: "alɛ", ruPron: "алэ" }
+        ],
+        "passé composé": [
+          { pronoun: "je", aux: "suis", auxIpa: "sɥi", auxRu: "сьюи", pp: "allé", ppIpa: "ale", ppRu: "але" },
+          { pronoun: "tu", aux: "es", auxIpa: "e", auxRu: "э", pp: "allé", ppIpa: "ale", ppRu: "але" },
+          { pronoun: "il/elle/on", aux: "est", auxIpa: "e", auxRu: "э", pp: "allé", ppIpa: "ale", ppRu: "але" },
+          { pronoun: "nous", aux: "sommes", auxIpa: "sɔm", auxRu: "сом", pp: "allé", ppIpa: "ale", ppRu: "але" },
+          { pronoun: "vous", aux: "êtes", auxIpa: "ɛt", auxRu: "эт", pp: "allé", ppIpa: "ale", ppRu: "але" },
+          { pronoun: "ils/elles", aux: "sont", auxIpa: "sɔ̃", auxRu: "сон", pp: "allé", ppIpa: "ale", ppRu: "але" }
+        ]
+      },
+      "venir": {
+        "présent": [
+          { pronoun: "je", form: "viens", ipa: "vjɛ̃", ruPron: "вьен" },
+          { pronoun: "tu", form: "viens", ipa: "vjɛ̃", ruPron: "вьен" },
+          { pronoun: "il/elle/on", form: "vient", ipa: "vjɛ̃", ruPron: "вьен" },
+          { pronoun: "nous", form: "venons", ipa: "vənɔ̃", ruPron: "вёнõ" },
+          { pronoun: "vous", form: "venez", ipa: "vəne", ruPron: "вёне" },
+          { pronoun: "ils/elles", form: "viennent", ipa: "vjɛn", ruPron: "вьен" }
+        ],
+        "imparfait": [
+          { pronoun: "je", form: "venais", ipa: "vənɛ", ruPron: "вёнэ" },
+          { pronoun: "tu", form: "venais", ipa: "vənɛ", ruPron: "вёнэ" },
+          { pronoun: "il/elle/on", form: "venait", ipa: "vənɛ", ruPron: "вёнэ" },
+          { pronoun: "nous", form: "venions", ipa: "vənjɔ̃", ruPron: "вёньõ" },
+          { pronoun: "vous", form: "veniez", ipa: "vənje", ruPron: "вёнье" },
+          { pronoun: "ils/elles", form: "venaient", ipa: "vənɛ", ruPron: "вёнэ" }
+        ],
+        "passé composé": [
+          { pronoun: "je", aux: "suis", auxIpa: "sɥi", auxRu: "сьюи", pp: "venu", ppIpa: "vny", ppRu: "вню" },
+          { pronoun: "tu", aux: "es", auxIpa: "e", auxRu: "э", pp: "venu", ppIpa: "vny", ppRu: "вню" },
+          { pronoun: "il/elle/on", aux: "est", auxIpa: "e", auxRu: "э", pp: "venu", ppIpa: "vny", ppRu: "вню" },
+          { pronoun: "nous", aux: "sommes", auxIpa: "sɔm", auxRu: "сом", pp: "venu", ppIpa: "vny", ppRu: "вню" },
+          { pronoun: "vous", aux: "êtes", auxIpa: "ɛt", auxRu: "эт", pp: "venu", ppIpa: "vny", ppRu: "вню" },
+          { pronoun: "ils/elles", aux: "sont", auxIpa: "sɔ̃", auxRu: "сон", pp: "venu", ppIpa: "vny", ppRu: "вню" }
+        ]
+      },
+      "prendre": {
+        "présent": [
+          { pronoun: "je", form: "prends", ipa: "pʁɑ̃", ruPron: "пран" },
+          { pronoun: "tu", form: "prends", ipa: "pʁɑ̃", ruPron: "пран" },
+          { pronoun: "il/elle/on", form: "prend", ipa: "pʁɑ̃", ruPron: "пран" },
+          { pronoun: "nous", form: "prenons", ipa: "pʁənɔ̃", ruPron: "прёнõ" },
+          { pronoun: "vous", form: "prenez", ipa: "pʁəne", ruPron: "прёне" },
+          { pronoun: "ils/elles", form: "prennent", ipa: "pʁɛn", ruPron: "прэн" }
+        ],
+        "imparfait": [
+          { pronoun: "je", form: "prenais", ipa: "pʁənɛ", ruPron: "прёнэ" },
+          { pronoun: "tu", form: "prenais", ipa: "pʁənɛ", ruPron: "прёнэ" },
+          { pronoun: "il/elle/on", form: "prenait", ipa: "pʁənɛ", ruPron: "прёнэ" },
+          { pronoun: "nous", form: "prenions", ipa: "pʁənjɔ̃", ruPron: "прёньõ" },
+          { pronoun: "vous", form: "preniez", ipa: "pʁənje", ruPron: "прёнье" },
+          { pronoun: "ils/elles", form: "prenaient", ipa: "pʁənɛ", ruPron: "прёнэ" }
+        ],
+        "passé composé": [
+          { pronoun: "je", aux: "ai", auxIpa: "e", auxRu: "э", pp: "pris", ppIpa: "pʁi", ppRu: "при" },
+          { pronoun: "tu", aux: "as", auxIpa: "a", auxRu: "а", pp: "pris", ppIpa: "pʁi", ppRu: "при" },
+          { pronoun: "il/elle/on", aux: "a", auxIpa: "a", auxRu: "а", pp: "pris", ppIpa: "pʁi", ppRu: "при" },
+          { pronoun: "nous", aux: "avons", auxIpa: "avɔ̃", auxRu: "авõ", pp: "pris", ppIpa: "pʁi", ppRu: "при" },
+          { pronoun: "vous", aux: "avez", auxIpa: "ave", auxRu: "авэ", pp: "pris", ppIpa: "pʁi", ppRu: "при" },
+          { pronoun: "ils/elles", aux: "ont", auxIpa: "ɔ̃", auxRu: "õ", pp: "pris", ppIpa: "pʁi", ppRu: "при" }
+        ]
+      },
+      "voir": {
+        "présent": [
+          { pronoun: "je", form: "vois", ipa: "vwa", ruPron: "вуа" },
+          { pronoun: "tu", form: "vois", ipa: "vwa", ruPron: "вуа" },
+          { pronoun: "il/elle/on", form: "voit", ipa: "vwa", ruPron: "вуа" },
+          { pronoun: "nous", form: "voyons", ipa: "vwajɔ̃", ruPron: "вуайõ" },
+          { pronoun: "vous", form: "voyez", ipa: "vwaje", ruPron: "вуайе" },
+          { pronoun: "ils/elles", form: "voient", ipa: "vwa", ruPron: "вуа" }
+        ],
+        "imparfait": [
+          { pronoun: "je", form: "voyais", ipa: "vwajɛ", ruPron: "вуайэ" },
+          { pronoun: "tu", form: "voyais", ipa: "vwajɛ", ruPron: "вуайэ" },
+          { pronoun: "il/elle/on", form: "voyait", ipa: "vwajɛ", ruPron: "вуайэ" },
+          { pronoun: "nous", form: "voyions", ipa: "vwajɔ̃", ruPron: "вуайõ" },
+          { pronoun: "vous", form: "voyiez", ipa: "vwaje", ruPron: "вуайе" },
+          { pronoun: "ils/elles", form: "voyaient", ipa: "vwajɛ", ruPron: "вуайэ" }
+        ],
+        "passé composé": [
+          { pronoun: "je", aux: "ai", auxIpa: "e", auxRu: "э", pp: "vu", ppIpa: "vy", ppRu: "вю" },
+          { pronoun: "tu", aux: "as", auxIpa: "a", auxRu: "а", pp: "vu", ppIpa: "vy", ppRu: "вю" },
+          { pronoun: "il/elle/on", aux: "a", auxIpa: "a", auxRu: "а", pp: "vu", ppIpa: "vy", ppRu: "вю" },
+          { pronoun: "nous", aux: "avons", auxIpa: "avɔ̃", auxRu: "авõ", pp: "vu", ppIpa: "vy", ppRu: "вю" },
+          { pronoun: "vous", aux: "avez", auxIpa: "ave", auxRu: "авэ", pp: "vu", ppIpa: "vy", ppRu: "вю" },
+          { pronoun: "ils/elles", aux: "ont", auxIpa: "ɔ̃", auxRu: "õ", pp: "vu", ppIpa: "vy", ppRu: "вю" }
+        ]
+      },
+      "vouloir": {
+        "présent": [
+          { pronoun: "je", form: "veux", ipa: "vø", ruPron: "вё" },
+          { pronoun: "tu", form: "veux", ipa: "vø", ruPron: "вё" },
+          { pronoun: "il/elle/on", form: "veut", ipa: "vø", ruPron: "вё" },
+          { pronoun: "nous", form: "voulons", ipa: "vulɔ̃", ruPron: "вулõ" },
+          { pronoun: "vous", form: "voulez", ipa: "vule", ruPron: "вуле" },
+          { pronoun: "ils/elles", form: "veulent", ipa: "vœl", ruPron: "вэл" }
+        ],
+        "imparfait": [
+          { pronoun: "je", form: "voulais", ipa: "vulɛ", ruPron: "вулэ" },
+          { pronoun: "tu", form: "voulais", ipa: "vulɛ", ruPron: "вулэ" },
+          { pronoun: "il/elle/on", form: "voulait", ipa: "vulɛ", ruPron: "вулэ" },
+          { pronoun: "nous", form: "voulions", ipa: "vuljɔ̃", ruPron: "вульõ" },
+          { pronoun: "vous", form: "vouliez", ipa: "vulje", ruPron: "вулье" },
+          { pronoun: "ils/elles", form: "voulaient", ipa: "vulɛ", ruPron: "вулэ" }
+        ],
+        "passé composé": [
+          { pronoun: "je", aux: "ai", auxIpa: "e", auxRu: "э", pp: "voulu", ppIpa: "vuly", ppRu: "вулю" },
+          { pronoun: "tu", aux: "as", auxIpa: "a", auxRu: "а", pp: "voulu", ppIpa: "vuly", ppRu: "вулю" },
+          { pronoun: "il/elle/on", aux: "a", auxIpa: "a", auxRu: "а", pp: "voulu", ppIpa: "vuly", ppRu: "вулю" },
+          { pronoun: "nous", aux: "avons", auxIpa: "avɔ̃", auxRu: "авõ", pp: "voulu", ppIpa: "vuly", ppRu: "вулю" },
+          { pronoun: "vous", aux: "avez", auxIpa: "ave", auxRu: "авэ", pp: "voulu", ppIpa: "vuly", ppRu: "вулю" },
+          { pronoun: "ils/elles", aux: "ont", auxIpa: "ɔ̃", auxRu: "õ", pp: "voulu", ppIpa: "vuly", ppRu: "вулю" }
+        ]
+      },
+      "pouvoir": {
+        "présent": [
+          { pronoun: "je", form: "peux", ipa: "pø", ruPron: "пё" },
+          { pronoun: "tu", form: "peux", ipa: "pø", ruPron: "пё" },
+          { pronoun: "il/elle/on", form: "peut", ipa: "pø", ruPron: "пё" },
+          { pronoun: "nous", form: "pouvons", ipa: "puvɔ̃", ruPron: "пувõ" },
+          { pronoun: "vous", form: "pouvez", ipa: "puve", ruPron: "пувэ" },
+          { pronoun: "ils/elles", form: "peuvent", ipa: "pœv", ruPron: "пёв" }
+        ],
+        "imparfait": [
+          { pronoun: "je", form: "pouvais", ipa: "puvɛ", ruPron: "пувэ" },
+          { pronoun: "tu", form: "pouvais", ipa: "puvɛ", ruPron: "пувэ" },
+          { pronoun: "il/elle/on", form: "pouvait", ipa: "puvɛ", ruPron: "пувэ" },
+          { pronoun: "nous", form: "pouvions", ipa: "puvjɔ̃", ruPron: "пувьõ" },
+          { pronoun: "vous", form: "pouviez", ipa: "puvje", ruPron: "пувье" },
+          { pronoun: "ils/elles", form: "pouvaient", ipa: "puvɛ", ruPron: "пувэ" }
+        ],
+        "passé composé": [
+          { pronoun: "je", aux: "ai", auxIpa: "e", auxRu: "э", pp: "pu", ppIpa: "py", ppRu: "пю" },
+          { pronoun: "tu", aux: "as", auxIpa: "a", auxRu: "а", pp: "pu", ppIpa: "py", ppRu: "пю" },
+          { pronoun: "il/elle/on", aux: "a", auxIpa: "a", auxRu: "а", pp: "pu", ppIpa: "py", ppRu: "пю" },
+          { pronoun: "nous", aux: "avons", auxIpa: "avɔ̃", auxRu: "авõ", pp: "pu", ppIpa: "py", ppRu: "пю" },
+          { pronoun: "vous", aux: "avez", auxIpa: "ave", auxRu: "авэ", pp: "pu", ppIpa: "py", ppRu: "пю" },
+          { pronoun: "ils/elles", aux: "ont", auxIpa: "ɔ̃", auxRu: "õ", pp: "pu", ppIpa: "py", ppRu: "пю" }
+        ]
+      },
+      "savoir": {
+        "présent": [
+          { pronoun: "je", form: "sais", ipa: "sɛ", ruPron: "сэ" },
+          { pronoun: "tu", form: "sais", ipa: "sɛ", ruPron: "сэ" },
+          { pronoun: "il/elle/on", form: "sait", ipa: "sɛ", ruPron: "сэ" },
+          { pronoun: "nous", form: "savons", ipa: "savɔ̃", ruPron: "савõ" },
+          { pronoun: "vous", form: "savez", ipa: "save", ruPron: "савэ" },
+          { pronoun: "ils/elles", form: "savent", ipa: "sav", ruPron: "сав" }
+        ],
+        "imparfait": [
+          { pronoun: "je", form: "savais", ipa: "savɛ", ruPron: "савэ" },
+          { pronoun: "tu", form: "savais", ipa: "savɛ", ruPron: "савэ" },
+          { pronoun: "il/elle/on", form: "savait", ipa: "savɛ", ruPron: "савэ" },
+          { pronoun: "nous", form: "savions", ipa: "savjɔ̃", ruPron: "савьõ" },
+          { pronoun: "vous", form: "saviez", ipa: "savje", ruPron: "савье" },
+          { pronoun: "ils/elles", form: "savaient", ipa: "savɛ", ruPron: "савэ" }
+        ],
+        "passé composé": [
+          { pronoun: "je", aux: "ai", auxIpa: "e", auxRu: "э", pp: "su", ppIpa: "sy", ppRu: "сю" },
+          { pronoun: "tu", aux: "as", auxIpa: "a", auxRu: "а", pp: "su", ppIpa: "sy", ppRu: "сю" },
+          { pronoun: "il/elle/on", aux: "a", auxIpa: "a", auxRu: "а", pp: "su", ppIpa: "sy", ppRu: "сю" },
+          { pronoun: "nous", aux: "avons", auxIpa: "avɔ̃", auxRu: "авõ", pp: "su", ppIpa: "sy", ppRu: "сю" },
+          { pronoun: "vous", aux: "avez", auxIpa: "ave", auxRu: "авэ", pp: "su", ppIpa: "sy", ppRu: "сю" },
+          { pronoun: "ils/elles", aux: "ont", auxIpa: "ɔ̃", auxRu: "õ", pp: "su", ppIpa: "sy", ppRu: "сю" }
+        ]
+      },
+      "devoir": {
+        "présent": [
+          { pronoun: "je", form: "dois", ipa: "dwa", ruPron: "два" },
+          { pronoun: "tu", form: "dois", ipa: "dwa", ruPron: "два" },
+          { pronoun: "il/elle/on", form: "doit", ipa: "dwa", ruPron: "два" },
+          { pronoun: "nous", form: "devons", ipa: "dəvɔ̃", ruPron: "дёвõ" },
+          { pronoun: "vous", form: "devez", ipa: "dəve", ruPron: "дёвэ" },
+          { pronoun: "ils/elles", form: "doivent", ipa: "dwav", ruPron: "двав" }
+        ],
+        "imparfait": [
+          { pronoun: "je", form: "devais", ipa: "dəvɛ", ruPron: "дёвэ" },
+          { pronoun: "tu", form: "devais", ipa: "dəvɛ", ruPron: "дёвэ" },
+          { pronoun: "il/elle/on", form: "devait", ipa: "dəvɛ", ruPron: "дёвэ" },
+          { pronoun: "nous", form: "devions", ipa: "dəvjɔ̃", ruPron: "дёвьõ" },
+          { pronoun: "vous", form: "deviez", ipa: "dəvje", ruPron: "дёвье" },
+          { pronoun: "ils/elles", form: "devaient", ipa: "dəvɛ", ruPron: "дёвэ" }
+        ],
+        "passé composé": [
+          { pronoun: "je", aux: "ai", auxIpa: "e", auxRu: "э", pp: "dû", ppIpa: "dy", ppRu: "дю" },
+          { pronoun: "tu", aux: "as", auxIpa: "a", auxRu: "а", pp: "dû", ppIpa: "dy", ppRu: "дю" },
+          { pronoun: "il/elle/on", aux: "a", auxIpa: "a", auxRu: "а", pp: "dû", ppIpa: "dy", ppRu: "дю" },
+          { pronoun: "nous", aux: "avons", auxIpa: "avɔ̃", auxRu: "авõ", pp: "dû", ppIpa: "dy", ppRu: "дю" },
+          { pronoun: "vous", aux: "avez", auxIpa: "ave", auxRu: "авэ", pp: "dû", ppIpa: "dy", ppRu: "дю" },
+          { pronoun: "ils/elles", aux: "ont", auxIpa: "ɔ̃", auxRu: "õ", pp: "dû", ppIpa: "dy", ppRu: "дю" }
+        ]
+      },
+      "mettre": {
+        "présent": [
+          { pronoun: "je", form: "mets", ipa: "mɛ", ruPron: "мэ" },
+          { pronoun: "tu", form: "mets", ipa: "mɛ", ruPron: "мэ" },
+          { pronoun: "il/elle/on", form: "met", ipa: "mɛ", ruPron: "мэ" },
+          { pronoun: "nous", form: "mettons", ipa: "mɛtɔ̃", ruPron: "метõ" },
+          { pronoun: "vous", form: "mettez", ipa: "mɛte", ruPron: "мете" },
+          { pronoun: "ils/elles", form: "mettent", ipa: "mɛt", ruPron: "мет" }
+        ],
+        "imparfait": [
+          { pronoun: "je", form: "mettais", ipa: "mɛtɛ", ruPron: "метэ" },
+          { pronoun: "tu", form: "mettais", ipa: "mɛtɛ", ruPron: "метэ" },
+          { pronoun: "il/elle/on", form: "mettait", ipa: "mɛtɛ", ruPron: "метэ" },
+          { pronoun: "nous", form: "mettions", ipa: "mɛtjɔ̃", ruPron: "метьõ" },
+          { pronoun: "vous", form: "mettiez", ipa: "mɛtje", ruPron: "метье" },
+          { pronoun: "ils/elles", form: "mettaient", ipa: "mɛtɛ", ruPron: "метэ" }
+        ],
+        "passé composé": [
+          { pronoun: "je", aux: "ai", auxIpa: "e", auxRu: "э", pp: "mis", ppIpa: "mi", ppRu: "ми" },
+          { pronoun: "tu", aux: "as", auxIpa: "a", auxRu: "а", pp: "mis", ppIpa: "mi", ppRu: "ми" },
+          { pronoun: "il/elle/on", aux: "a", auxIpa: "a", auxRu: "а", pp: "mis", ppIpa: "mi", ppRu: "ми" },
+          { pronoun: "nous", aux: "avons", auxIpa: "avɔ̃", auxRu: "авõ", pp: "mis", ppIpa: "mi", ppRu: "ми" },
+          { pronoun: "vous", aux: "avez", auxIpa: "ave", auxRu: "авэ", pp: "mis", ppIpa: "mi", ppRu: "ми" },
+          { pronoun: "ils/elles", aux: "ont", auxIpa: "ɔ̃", auxRu: "õ", pp: "mis", ppIpa: "mi", ppRu: "ми" }
+        ]
+      },
+      "dire": {
+        "présent": [
+          { pronoun: "je", form: "dis", ipa: "di", ruPron: "ди" },
+          { pronoun: "tu", form: "dis", ipa: "di", ruPron: "ди" },
+          { pronoun: "il/elle/on", form: "dit", ipa: "di", ruPron: "ди" },
+          { pronoun: "nous", form: "disons", ipa: "dizɔ̃", ruPron: "дизõ" },
+          { pronoun: "vous", form: "dites", ipa: "dit", ruPron: "дит" },
+          { pronoun: "ils/elles", form: "disent", ipa: "diz", ruPron: "диз" }
+        ],
+        "imparfait": [
+          { pronoun: "je", form: "disais", ipa: "dizɛ", ruPron: "дизэ" },
+          { pronoun: "tu", form: "disais", ipa: "dizɛ", ruPron: "дизэ" },
+          { pronoun: "il/elle/on", form: "disait", ipa: "dizɛ", ruPron: "дизэ" },
+          { pronoun: "nous", form: "disions", ipa: "dizjɔ̃", ruPron: "дизьõ" },
+          { pronoun: "vous", form: "disiez", ipa: "dizje", ruPron: "дизье" },
+          { pronoun: "ils/elles", form: "disaient", ipa: "dizɛ", ruPron: "дизэ" }
+        ],
+        "passé composé": [
+          { pronoun: "je", aux: "ai", auxIpa: "e", auxRu: "э", pp: "dit", ppIpa: "di", ppRu: "ди" },
+          { pronoun: "tu", aux: "as", auxIpa: "a", auxRu: "а", pp: "dit", ppIpa: "di", ppRu: "ди" },
+          { pronoun: "il/elle/on", aux: "a", auxIpa: "a", auxRu: "а", pp: "dit", ppIpa: "di", ppRu: "ди" },
+          { pronoun: "nous", aux: "avons", auxIpa: "avɔ̃", auxRu: "авõ", pp: "dit", ppIpa: "di", ppRu: "ди" },
+          { pronoun: "vous", aux: "avez", auxIpa: "ave", auxRu: "авэ", pp: "dit", ppIpa: "di", ppRu: "ди" },
+          { pronoun: "ils/elles", aux: "ont", auxIpa: "ɔ̃", auxRu: "õ", pp: "dit", ppIpa: "di", ppRu: "ди" }
+        ]
+      },
+      "écrire": {
+        "présent": [
+          { pronoun: "je", form: "écris", ipa: "ekʁi", ruPron: "экри" },
+          { pronoun: "tu", form: "écris", ipa: "ekʁi", ruPron: "экри" },
+          { pronoun: "il/elle/on", form: "écrit", ipa: "ekʁi", ruPron: "экри" },
+          { pronoun: "nous", form: "écrivons", ipa: "ekʁivɔ̃", ruPron: "экривõ" },
+          { pronoun: "vous", form: "écrivez", ipa: "ekʁive", ruPron: "экривэ" },
+          { pronoun: "ils/elles", form: "écrivent", ipa: "ekʁiv", ruPron: "экрив" }
+        ],
+        "imparfait": [
+          { pronoun: "je", form: "écrivais", ipa: "ekʁivɛ", ruPron: "экривэ" },
+          { pronoun: "tu", form: "écrivais", ipa: "ekʁivɛ", ruPron: "экривэ" },
+          { pronoun: "il/elle/on", form: "écrivait", ipa: "ekʁivɛ", ruPron: "экривэ" },
+          { pronoun: "nous", form: "écrivions", ipa: "ekʁivjɔ̃", ruPron: "экривьõ" },
+          { pronoun: "vous", form: "écriviez", ipa: "ekʁivje", ruPron: "экривье" },
+          { pronoun: "ils/elles", form: "écrivaient", ipa: "ekʁivɛ", ruPron: "экривэ" }
+        ],
+        "passé composé": [
+          { pronoun: "je", aux: "ai", auxIpa: "e", auxRu: "э", pp: "écrit", ppIpa: "ekʁi", ppRu: "экри" },
+          { pronoun: "tu", aux: "as", auxIpa: "a", auxRu: "а", pp: "écrit", ppIpa: "ekʁi", ppRu: "экри" },
+          { pronoun: "il/elle/on", aux: "a", auxIpa: "a", auxRu: "а", pp: "écrit", ppIpa: "ekʁi", ppRu: "экри" },
+          { pronoun: "nous", aux: "avons", auxIpa: "avɔ̃", auxRu: "авõ", pp: "écrit", ppIpa: "ekʁi", ppRu: "экри" },
+          { pronoun: "vous", aux: "avez", auxIpa: "ave", auxRu: "авэ", pp: "écrit", ppIpa: "ekʁi", ppRu: "экри" },
+          { pronoun: "ils/elles", aux: "ont", auxIpa: "ɔ̃", auxRu: "õ", pp: "écrit", ppIpa: "ekʁi", ppRu: "экри" }
+        ]
+      }
+    };
+    // Тест-кейсы (должны выполняться):
+    // 1. На справочнике выбор être + présent даёт 6 строк с IPA и ruPron.
+    // 2. В тренировке aller + passé composé + je показывает suis + allé с транскрипциями.
+    // 3. За 15 раундов не повторяется одинаковая тройка (глагол+время+местоимение).
+    // 4. Enter в поле ответа равнозначен нажатию «Показать ответ».
+    // 5. На экране завершения «Повторить тренировку» запускает новую серию из 15 раундов.
+
+    const TENSE_LABELS = {
+      "présent": "Présent",
+      "imparfait": "Imparfait",
+      "passé composé": "Passé Composé"
+    };
+
+    class Trainer {
+      constructor(data) {
+        this.data = data;
+        this.totalRounds = 15;
+        this.allCombos = this.buildAllCombos();
+        this.reset();
+      }
+
+      buildAllCombos() {
+        const combos = [];
+        for (const [verb, tenses] of Object.entries(this.data)) {
+          for (const tenseKey of Object.keys(TENSE_LABELS)) {
+            const forms = tenses[tenseKey];
+            forms.forEach(entry => {
+              combos.push({ verb, tense: tenseKey, pronoun: entry.pronoun });
+            });
+          }
+        }
+        return combos;
+      }
+
+      reset() {
+        this.queue = shuffleArray(this.allCombos).slice(0, this.totalRounds);
+        this.index = 0;
+      }
+
+      current() {
+        return this.queue[this.index];
+      }
+
+      advance() {
+        this.index += 1;
+      }
+
+      isFinished() {
+        return this.index >= this.queue.length;
+      }
+    }
+
+    const bodyEl = document.body;
+    const referenceScreen = document.getElementById("reference-screen");
+    const trainingScreen = document.getElementById("training-screen");
+    const completionScreen = document.getElementById("completion-screen");
+    const screens = { reference: referenceScreen, training: trainingScreen, completion: completionScreen };
+
+    const verbSelect = document.getElementById("verb-select");
+    const tenseSelect = document.getElementById("tense-select");
+    const tableBody = document.getElementById("table-body");
+    const startTrainingBtn = document.getElementById("start-training");
+    const navReferenceBtn = document.getElementById("nav-reference");
+    const navTrainingBtn = document.getElementById("nav-training");
+    const themeToggleBtn = document.getElementById("theme-toggle");
+
+    const trainingCard = document.getElementById("training-card");
+    const trainingTitle = document.getElementById("training-title");
+    const trainingMeta = document.getElementById("training-meta");
+    const answerForm = document.getElementById("answer-form");
+    const answerInput = document.getElementById("answer-input");
+    const revealButton = document.getElementById("reveal-button");
+    const nextButton = document.getElementById("next-button");
+    const resultArea = document.getElementById("result-area");
+    const roundIndicator = document.getElementById("round-indicator");
+    const restartTrainingBtn = document.getElementById("restart-training");
+    const backToReferenceBtn = document.getElementById("back-to-reference");
+
+    const trainer = new Trainer(VERBS);
+    let currentCombo = null;
+    let hasRevealed = false;
+    let lastInput = "";
+
+    document.addEventListener("DOMContentLoaded", initApp);
+
+    function initApp() {
+      populateVerbSelect();
+      populateTenseSelect();
+      updateTable();
+      setupEventListeners();
+      applyPreferredTheme();
+      verbSelect.focus();
+    }
+
+    function populateVerbSelect() {
+      const verbs = Object.keys(VERBS).sort((a, b) => a.localeCompare(b, "fr"));
+      verbSelect.innerHTML = verbs.map(verb => `<option value="${verb}">${capitalize(verb)}</option>`).join("");
+    }
+
+    function populateTenseSelect() {
+      tenseSelect.innerHTML = Object.entries(TENSE_LABELS)
+        .map(([key, label]) => `<option value="${key}">${label}</option>`)
+        .join("");
+    }
+
+    function updateTable() {
+      const verb = verbSelect.value;
+      const tense = tenseSelect.value;
+      const forms = VERBS[verb][tense];
+      tableBody.innerHTML = "";
+      forms.forEach(entry => {
+        const row = document.createElement("tr");
+        const pronCell = document.createElement("th");
+        pronCell.scope = "row";
+        pronCell.textContent = entry.pronoun;
+
+        const formCell = document.createElement("td");
+        const mainText = document.createElement("div");
+        mainText.className = "form-main";
+        if (tense === "passé composé") {
+          mainText.textContent = `${formatPronounWithWord(entry.pronoun, entry.aux)} ${entry.pp}`;
+        } else {
+          mainText.textContent = formatPronounWithWord(entry.pronoun, entry.form);
+        }
+        formCell.appendChild(mainText);
+
+        const details = document.createElement("div");
+        details.className = "form-details";
+        if (tense === "passé composé") {
+          details.innerHTML = `<span class="label">Вспомогательный:</span> ${entry.aux} [${entry.auxIpa}] («${entry.auxRu}») <span class="label">Participe passé:</span> ${entry.pp} [${entry.ppIpa}] («${entry.ppRu}»)`;
+        } else {
+          details.innerHTML = `<span class="label">IPA:</span> ${entry.ipa} · <span class="label">Рус.:</span> ${entry.ruPron}`;
+        }
+        formCell.appendChild(details);
+
+        row.appendChild(pronCell);
+        row.appendChild(formCell);
+        tableBody.appendChild(row);
+      });
+    }
+    function setupEventListeners() {
+      verbSelect.addEventListener("change", () => {
+        updateTable();
+        verbSelect.focus();
+      });
+      tenseSelect.addEventListener("change", updateTable);
+
+      startTrainingBtn.addEventListener("click", () => {
+        startTrainingSession();
+        showScreen("training");
+      });
+
+      navReferenceBtn.addEventListener("click", () => {
+        showScreen("reference");
+      });
+
+      navTrainingBtn.addEventListener("click", () => {
+        startTrainingSession();
+        showScreen("training");
+      });
+
+      answerForm.addEventListener("submit", event => {
+        event.preventDefault();
+        handleReveal();
+      });
+
+      nextButton.addEventListener("click", () => {
+        if (!hasRevealed) return;
+        handleNext();
+      });
+
+      restartTrainingBtn.addEventListener("click", () => {
+        startTrainingSession();
+        showScreen("training");
+      });
+
+      backToReferenceBtn.addEventListener("click", () => {
+        showScreen("reference");
+      });
+
+      themeToggleBtn.addEventListener("click", () => {
+        const nextTheme = bodyEl.dataset.theme === "dark" ? "light" : "dark";
+        setTheme(nextTheme);
+        try {
+          localStorage.setItem("conjugueur-theme", nextTheme);
+        } catch (error) {
+          console.warn("Не удалось сохранить тему", error);
+        }
+      });
+    }
+
+    function startTrainingSession() {
+      trainer.reset();
+      renderCurrentRound();
+    }
+
+    function renderCurrentRound() {
+      if (trainer.isFinished()) {
+        showCompletion();
+        return;
+      }
+      currentCombo = trainer.current();
+      hasRevealed = false;
+      lastInput = "";
+      trainingTitle.textContent = capitalize(currentCombo.verb);
+      trainingMeta.textContent = `${TENSE_LABELS[currentCombo.tense]} · ${currentCombo.pronoun}`;
+      answerInput.value = "";
+      answerInput.removeAttribute("disabled");
+      revealButton.disabled = false;
+      nextButton.disabled = true;
+      resultArea.innerHTML = "";
+      roundIndicator.textContent = `Раунд ${trainer.index + 1} из ${trainer.totalRounds}`;
+      applyFade(trainingCard);
+      answerInput.focus();
+    }
+
+    function handleReveal() {
+      if (!currentCombo || hasRevealed) {
+        return;
+      }
+      hasRevealed = true;
+      lastInput = answerInput.value.trim();
+      const entry = getEntry(currentCombo.verb, currentCombo.tense, currentCombo.pronoun);
+      if (!entry) {
+        return;
+      }
+      let correctForm = "";
+      let pronunciationHtml = "";
+      if (currentCombo.tense === "passé composé") {
+        correctForm = `${formatPronounWithWord(currentCombo.pronoun, entry.aux)} ${entry.pp}`;
+        pronunciationHtml = `<div class="pronunciation">Вспомогательный: ${entry.aux} [${entry.auxIpa}] («${entry.auxRu}») · Participe passé: ${entry.pp} [${entry.ppIpa}] («${entry.ppRu}»)</div>`;
+      } else {
+        correctForm = formatPronounWithWord(currentCombo.pronoun, entry.form);
+        pronunciationHtml = `<div class="pronunciation">IPA: ${entry.ipa} · Рус.: ${entry.ruPron}</div>`;
+      }
+      const userHtml = lastInput ? `<div class="user-entry">Твоя версия: «${escapeHtml(lastInput)}»</div>` : "";
+      resultArea.innerHTML = `<div class="correct-answer">${escapeHtml(correctForm)}</div>${pronunciationHtml}${userHtml}`;
+      revealButton.disabled = true;
+      nextButton.disabled = false;
+      nextButton.focus();
+    }
+
+    function handleNext() {
+      trainer.advance();
+      if (trainer.isFinished()) {
+        showCompletion();
+      } else {
+        renderCurrentRound();
+      }
+    }
+
+    function showCompletion() {
+      showScreen("completion");
+    }
+
+    function showScreen(name) {
+      Object.values(screens).forEach(section => section.classList.remove("active"));
+      const target = screens[name];
+      if (!target) return;
+      target.classList.add("active");
+      if (name === "reference") {
+        verbSelect.focus();
+      } else if (name === "training") {
+        answerInput.focus();
+      } else if (name === "completion") {
+        restartTrainingBtn.focus();
+      }
+    }
+    function getEntry(verb, tense, pronoun) {
+      const forms = VERBS[verb][tense];
+      return forms.find(item => item.pronoun === pronoun);
+    }
+
+    function formatPronounWithWord(pronoun, word) {
+      const needsElision = pronoun === "je" && /^[aeiouyhâàæéèêëîïôùûüœ]/i.test(word);
+      if (needsElision) {
+        return `j'${word}`;
+      }
+      return `${pronoun} ${word}`;
+    }
+
+    function capitalize(word) {
+      if (!word) return "";
+      return word.charAt(0).toLocaleUpperCase("fr-FR") + word.slice(1);
+    }
+
+    function shuffleArray(array) {
+      const result = array.slice();
+      for (let i = result.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [result[i], result[j]] = [result[j], result[i]];
+      }
+      return result;
+    }
+
+    function applyFade(element) {
+      element.classList.remove("fade");
+      void element.offsetWidth;
+      element.classList.add("fade");
+      requestAnimationFrame(() => {
+        element.classList.remove("fade");
+      });
+    }
+
+    function escapeHtml(value) {
+      return value.replace(/[&<>"']/g, char => {
+        const map = {
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;"
+        };
+        return map[char] || char;
+      });
+    }
+
+    function applyPreferredTheme() {
+      let storedTheme = null;
+      try {
+        storedTheme = localStorage.getItem("conjugueur-theme");
+      } catch (error) {
+        storedTheme = null;
+      }
+      const systemPrefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const initialTheme = storedTheme || (systemPrefersDark ? "dark" : "light");
+      setTheme(initialTheme);
+      if (window.matchMedia) {
+        const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+        mediaQuery.addEventListener("change", event => {
+          let hasStored = false;
+          try {
+            hasStored = Boolean(localStorage.getItem("conjugueur-theme"));
+          } catch (error) {
+            hasStored = false;
+          }
+          if (!hasStored) {
+            setTheme(event.matches ? "dark" : "light");
+          }
+        });
+      }
+    }
+
+    function setTheme(theme) {
+      bodyEl.dataset.theme = theme;
+      updateThemeToggleLabel(theme);
+    }
+
+    function updateThemeToggleLabel(theme) {
+      const isDark = theme === "dark";
+      themeToggleBtn.textContent = isDark ? "Светлая тема" : "Темная тема";
+      themeToggleBtn.setAttribute("aria-pressed", String(isDark));
+    }
+  </script>
+</body>
+</html>
