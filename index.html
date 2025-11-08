@@ -56,6 +56,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: clamp(12px, 4vw, 24px);
+      flex-wrap: wrap;
       box-shadow: 0 1px 0 rgba(255, 255, 255, 0.2);
     }
 
@@ -68,24 +70,28 @@
 
     nav {
       display: flex;
+      flex-wrap: wrap;
       gap: 12px;
       align-items: center;
+      justify-content: flex-end;
     }
 
     button {
       font: inherit;
-      border: none;
+      border: 1px solid transparent;
       border-radius: 999px;
       padding: 10px 18px;
       background: rgba(0, 0, 0, 0.08);
       color: var(--text);
       cursor: pointer;
-      transition: background 0.2s ease, transform 0.2s ease, color 0.2s ease;
+      transition: background 0.2s ease, transform 0.2s ease, color 0.2s ease,
+        border-color 0.2s ease;
       backdrop-filter: blur(12px);
     }
 
     button:hover {
       background: rgba(0, 0, 0, 0.15);
+      border-color: rgba(0, 0, 0, 0.04);
     }
 
     button:active {
@@ -101,6 +107,7 @@
       background: var(--accent);
       color: white;
       box-shadow: 0 10px 30px rgba(0, 113, 227, 0.25);
+      border-color: color-mix(in srgb, var(--accent) 60%, transparent);
     }
 
     .primary-button:hover {
@@ -109,18 +116,23 @@
 
     main {
       flex: 1;
-      padding: clamp(20px, 4vw, 50px);
-      display: grid;
-      place-items: start center;
+      padding: clamp(24px, 5vw, 60px) clamp(16px, 5vw, 40px) 64px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
     }
 
     .screen {
       width: min(960px, 100%);
       display: none;
+      margin: 0 auto;
     }
 
     .screen.active {
-      display: block;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 24px;
       animation: fade-in 0.2s ease;
     }
 
@@ -130,12 +142,17 @@
       box-shadow: var(--shadow);
       padding: clamp(20px, 4vw, 36px);
       backdrop-filter: blur(18px);
+      display: grid;
+      gap: 24px;
+      align-content: start;
+      width: 100%;
+      margin: 0 auto;
     }
 
     .selectors {
       display: grid;
       gap: 16px;
-      margin-bottom: 24px;
+      margin-bottom: 32px;
     }
 
     label {
@@ -144,7 +161,8 @@
       display: block;
     }
 
-    select, input[type="text"] {
+    select,
+    input[type="text"] {
       width: 100%;
       padding: 12px 16px;
       border-radius: 14px;
@@ -156,10 +174,20 @@
       transition: border 0.2s ease, box-shadow 0.2s ease;
     }
 
-    select:focus-visible, input[type="text"]:focus-visible {
+    select:focus-visible,
+    input[type="text"]:focus-visible {
       outline: var(--focus-outline);
       border-color: var(--accent);
       box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 20%, transparent);
+    }
+
+    #answer-form {
+      display: grid;
+      gap: 16px;
+    }
+
+    #answer-input {
+      font-size: 1.05rem;
     }
 
     table.conjugation-table {
@@ -168,6 +196,7 @@
       border-radius: 16px;
       overflow: hidden;
       background: var(--surface-strong);
+      caption-side: top;
     }
 
     table.conjugation-table tbody tr:nth-child(even) {
@@ -215,6 +244,8 @@
       display: grid;
       gap: 16px;
       transition: transform 0.2s ease, opacity 0.2s ease;
+      margin: 0 auto;
+      width: min(720px, 100%);
     }
 
     .card.fade {
@@ -244,6 +275,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
+      align-items: center;
     }
 
     #result-area {
@@ -254,6 +286,7 @@
       font-size: 1rem;
       display: grid;
       gap: 8px;
+      border: 1px solid rgba(0, 0, 0, 0.06);
     }
 
     .correct-answer {
@@ -278,7 +311,7 @@
     }
 
     footer {
-      padding: 24px;
+      padding: 24px clamp(16px, 5vw, 40px);
       text-align: center;
       color: var(--text-muted);
       font-size: 0.85rem;
@@ -314,6 +347,26 @@
     @media (min-width: 720px) {
       .selectors {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 600px) {
+      header {
+        justify-content: center;
+      }
+
+      nav {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .button-row {
+        width: 100%;
+        justify-content: center;
+      }
+
+      #answer-form {
+        gap: 20px;
       }
     }
   </style>
